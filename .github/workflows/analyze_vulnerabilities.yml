@@ -133,6 +133,7 @@ jobs:
         run: |
           BRANCH_NAME="patch/vulnerable-dependencies-$(date +%s)"
           git checkout -b "$BRANCH_NAME"
+          git push origin "$BRANCH_NAME"
           git add library-example/build.gradle
           git commit -m "Patch vulnerable dependencies"
           git push origin "$BRANCH_NAME"
