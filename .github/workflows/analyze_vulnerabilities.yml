@@ -14,7 +14,7 @@ jobs:
       - name: Fetch Vulnerabilities
         id: fetch_vulnerabilities
         env:
-          API_TOKEN: ${{ secrets.API_TOKEN_GH }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
         run: |
           QUERY=$(cat <<'EOF'
           {
@@ -34,28 +34,61 @@ jobs:
           echo "$RESPONSE" > vulnerabilities.json
           echo "$RESPONSE" | jq -c '.data.organization.repository.vulnerabilityAlerts.nodes[]' > vulnerabilities_list.json
 
-      - name: Patch Vulnerable Dependencies
+      - name: Classify Vulnerable Dependencies in library subproject
+        working-directory: library-example
         run: |
-          PATCH_TARGET="library-example/build.gradle"
+          gradle dependencies > gradle_dependencies.txt
+          gradle buildEnvironment > gradle_build_env.txt
+
+          touch found_in_dependencies.txt
+          touch found_in_build_env.txt
+
+          jq -c '.' ../vulnerabilities_list.json | while read -r vuln; do
+            PACKAGE=$(echo "$vuln" | jq -r '.securityVulnerability.package.name')
+            if grep -q "$PACKAGE" gradle_dependencies.txt; then
+              echo "$vuln" >> found_in_dependencies.txt
+            fi
+            if grep -q "$PACKAGE" gradle_build_env.txt; then
+              echo "$vuln" >> found_in_build_env.txt
+            fi
+          done
+
+      - name: Patch Vulnerable Dependencies in library subproject
+        working-directory: library-example
+        run: |
           patch_gradle() {
             local GROUP=$1
             local ARTIFACT=$2
             local VERSION=$3
+          
             if [ -z "$VERSION" ] || [ "$VERSION" == "null" ]; then
               echo "WARNING: No patched version found for ${GROUP}:${ARTIFACT}, skipping..."
               return 1
             fi
+          
             local PATCH_LINE="force '${GROUP}:${ARTIFACT}:${VERSION}'"
-            if grep -q "configurations.all[[:space:]]*{" "$PATCH_TARGET"; then
-              if grep -A 10 "configurations.all[[:space:]]*{" "$PATCH_TARGET" | grep -q "resolutionStrategy[[:space:]]*{"; then
-                if grep -q "force[[:space:]]*'${GROUP}:${ARTIFACT}:" "$PATCH_TARGET"; then
-                  sed -i "s|force[[:space:]]*'${GROUP}:${ARTIFACT}:[^']*'|${PATCH_LINE}|g" "$PATCH_TARGET"
+            local DIRECT_DEP_REGEX="['\"]${GROUP}:${ARTIFACT}:[^'\"]*['\"]"
+            local NEW_DEP="'${GROUP}:${ARTIFACT}:${VERSION}'"
+          
+            if grep -qE "$DIRECT_DEP_REGEX" build.gradle; then
+              echo "→ Updating direct dependency for ${GROUP}:${ARTIFACT} in dependencies block"
+              sed -i -E "s|$DIRECT_DEP_REGEX|$NEW_DEP|g" build.gradle
+              echo "✓ Patched as direct dependency only"
+              return 0
+            fi
+          
+            echo "→ ${GROUP}:${ARTIFACT} not found directly, patching via resolutionStrategy.force"
+          
+            if grep -q "configurations.all[[:space:]]*{" build.gradle; then
+              if grep -A 10 "configurations.all[[:space:]]*{" build.gradle | grep -q "resolutionStrategy[[:space:]]*{"; then
+                if grep -q "force[[:space:]]*'${GROUP}:${ARTIFACT}:" build.gradle; then
+                  sed -i "s|force[[:space:]]*'${GROUP}:${ARTIFACT}:[^']*'|${PATCH_LINE}|g" build.gradle
                 else
                   awk -v patch="$PATCH_LINE" '
                     /resolutionStrategy[[:space:]]*{/ { print; in_block=1; next }
                     in_block && /^\s*}/ { print "        " patch; in_block=0 }
                     { print }
-                  ' "$PATCH_TARGET" > tmp && mv tmp "$PATCH_TARGET"
+                  ' build.gradle > tmp && mv tmp build.gradle
                 fi
               else
                 awk -v patch="$PATCH_LINE" '
@@ -63,7 +96,7 @@ jobs:
                     print; print "    resolutionStrategy {"; print "        " patch; print "    }"; next
                   }
                   { print }
-                ' "$PATCH_TARGET" > tmp && mv tmp "$PATCH_TARGET"
+                ' build.gradle > tmp && mv tmp build.gradle
               fi
             else
               awk -v patch="$PATCH_LINE" '
@@ -72,15 +105,13 @@ jobs:
                   print "    resolutionStrategy {";
                   print "        " patch;
                   print "    }";
-                  print "}";
-                  print "";
-                  print $0;
-                  next;
+                  print "}"; print ""; print $0; next;
                 }
                 { print }
-              ' "$PATCH_TARGET" > tmp && mv tmp "$PATCH_TARGET"
+              ' build.gradle > tmp && mv tmp build.gradle
             fi
           }
+
           for FILE in found_in_dependencies.txt found_in_build_env.txt; do
             if [ -f "$FILE" ]; then
               while read -r entry; do
@@ -88,10 +119,13 @@ jobs:
                 PATCHED_VERSION=$(echo "$entry" | jq -r '.securityVulnerability.firstPatchedVersion.identifier')
                 GROUP=$(echo "$PACKAGE" | cut -d':' -f1)
                 ARTIFACT=$(echo "$PACKAGE" | cut -d':' -f2)
+
                 echo "Patching ${GROUP}:${ARTIFACT} to version ${PATCHED_VERSION}"
                 patch_gradle "$GROUP" "$ARTIFACT" "$PATCHED_VERSION"
               done < "$FILE"
             fi
           done
-      - name: Show Final build.gradle
-        run: cat library-example/build.gradle
+
+      - name: Show Final build.gradle (library)
+        working-directory: library-example
+        run: cat build.gradle
