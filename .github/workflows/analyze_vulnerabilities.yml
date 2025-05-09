@@ -1,0 +1,97 @@
+name: Classify and Patch Vulnerable Dependencies
+
+on:
+  workflow_dispatch:
+
+jobs:
+  classify-and-patch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch Vulnerabilities
+        id: fetch_vulnerabilities
+        env:
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+        run: |
+          QUERY=$(cat <<'EOF'
+          {
+            "query": "query ($org: String = \"\", $repo: String! = \"\") { organization(login: $org) { repository(name: $repo) { name vulnerabilityAlerts(first: 100, states: OPEN) { nodes { dependencyRelationship vulnerableManifestPath securityVulnerability { advisory { ghsaId summary } severity package { name ecosystem } firstPatchedVersion { identifier } vulnerableVersionRange } } } } } }",
+            "variables": {
+              "org": "${{ github.repository_owner }}",
+              "repo": "${{ github.event.repository.name }}"
+            }
+          }
+          EOF
+          )
+          RESPONSE=$(curl -s -X POST \
+            -H "Authorization: Bearer $API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$QUERY" \
+            https://api.github.com/graphql)
+          echo "$RESPONSE" > vulnerabilities.json
+          echo "$RESPONSE" | jq -c '.data.organization.repository.vulnerabilityAlerts.nodes[]' > vulnerabilities_list.json
+
+      - name: Patch Vulnerable Dependencies
+        run: |
+          PATCH_TARGET="library-example/build.gradle"
+          patch_gradle() {
+            local GROUP=$1
+            local ARTIFACT=$2
+            local VERSION=$3
+            if [ -z "$VERSION" ] || [ "$VERSION" == "null" ]; then
+              echo "WARNING: No patched version found for ${GROUP}:${ARTIFACT}, skipping..."
+              return 1
+            fi
+            local PATCH_LINE="force '${GROUP}:${ARTIFACT}:${VERSION}'"
+            if grep -q "configurations.all[[:space:]]*{" "$PATCH_TARGET"; then
+              if grep -A 10 "configurations.all[[:space:]]*{" "$PATCH_TARGET" | grep -q "resolutionStrategy[[:space:]]*{"; then
+                if grep -q "force[[:space:]]*'${GROUP}:${ARTIFACT}:" "$PATCH_TARGET"; then
+                  sed -i "s|force[[:space:]]*'${GROUP}:${ARTIFACT}:[^']*'|${PATCH_LINE}|g" "$PATCH_TARGET"
+                else
+                  awk -v patch="$PATCH_LINE" '
+                    /resolutionStrategy[[:space:]]*{/ { print; in_block=1; next }
+                    in_block && /^\s*}/ { print "        " patch; in_block=0 }
+                    { print }
+                  ' "$PATCH_TARGET" > tmp && mv tmp "$PATCH_TARGET"
+                fi
+              else
+                awk -v patch="$PATCH_LINE" '
+                  /configurations.all[[:space:]]*{/ {
+                    print; print "    resolutionStrategy {"; print "        " patch; print "    }"; next
+                  }
+                  { print }
+                ' "$PATCH_TARGET" > tmp && mv tmp "$PATCH_TARGET"
+              fi
+            else
+              awk -v patch="$PATCH_LINE" '
+                /^dependencies[[:space:]]*{/ {
+                  print "configurations.all {";
+                  print "    resolutionStrategy {";
+                  print "        " patch;
+                  print "    }";
+                  print "}";
+                  print "";
+                  print $0;
+                  next;
+                }
+                { print }
+              ' "$PATCH_TARGET" > tmp && mv tmp "$PATCH_TARGET"
+            fi
+          }
+          for FILE in found_in_dependencies.txt found_in_build_env.txt; do
+            if [ -f "$FILE" ]; then
+              while read -r entry; do
+                PACKAGE=$(echo "$entry" | jq -r '.securityVulnerability.package.name')
+                PATCHED_VERSION=$(echo "$entry" | jq -r '.securityVulnerability.firstPatchedVersion.identifier')
+                GROUP=$(echo "$PACKAGE" | cut -d':' -f1)
+                ARTIFACT=$(echo "$PACKAGE" | cut -d':' -f2)
+                echo "Patching ${GROUP}:${ARTIFACT} to version ${PATCHED_VERSION}"
+                patch_gradle "$GROUP" "$ARTIFACT" "$PATCHED_VERSION"
+              done < "$FILE"
+            fi
+          done
+      - name: Show Final build.gradle
+        run: cat library-example/build.gradle
