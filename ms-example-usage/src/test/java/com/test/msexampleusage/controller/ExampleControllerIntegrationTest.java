@@ -4,20 +4,25 @@ import com.test.libraryexample.MyService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import static org.mockito.Mockito.when;
+
 @WebFluxTest(ExampleController.class)
-@Import(ExampleControllerIntegrationTest.TestConfig.class)
 public class ExampleControllerIntegrationTest {
 
     @Autowired
     private WebTestClient webTestClient;
 
+    @MockitoBean
+    private MyService myService;
+
     @Test
     void testExampleEndpoint() {
+        // Arrange
+        when(myService.getMessage()).thenReturn("Test message from integration test");
+
         // Act & Assert
         webTestClient.get()
                 .uri("/example")
@@ -25,18 +30,5 @@ public class ExampleControllerIntegrationTest {
                 .expectStatus().isOk()
                 .expectBody(String.class)
                 .isEqualTo("Test message from integration test");
-    }
-
-    @Configuration
-    static class TestConfig {
-        @Bean
-        public MyService myService() {
-            return new MyService() {
-                @Override
-                public String getMessage() {
-                    return "Test message from integration test";
-                }
-            };
-        }
     }
 }
