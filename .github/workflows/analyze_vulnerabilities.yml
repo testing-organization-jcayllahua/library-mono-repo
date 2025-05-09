@@ -129,12 +129,23 @@ jobs:
               done < "$FILE"
             fi
           done
+      - name: Build with Gradle
+        run: ./gradlew :ms-example-usage:build
+  
+      - name: All tests passed
+        if: success()
+        run: echo "✅ All tests passed!"
+  
+      - name: Build failed
+        if: failure()
+        run: echo "❌ Build or tests failed"
+        
       - name: Create Patch Branch, Commit & Push
         run: |
           BRANCH_NAME="patch/vulnerable-dependencies-$(date +%s)"
           git checkout -b "$BRANCH_NAME"
           git push origin "$BRANCH_NAME"
-          sleep 10
+          sleep 30
           git add library-example/build.gradle
           git commit -m "Patch vulnerable dependencies"
           git push origin "$BRANCH_NAME"
