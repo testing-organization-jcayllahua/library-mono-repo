@@ -37,6 +37,15 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+bootJar {
+    enabled = false
+}
+
+// Enable regular jar task
+jar {
+    enabled = true
+}
 publishing {
     repositories {
         maven {
