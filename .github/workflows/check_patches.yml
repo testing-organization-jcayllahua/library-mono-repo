@@ -1,35 +1,34 @@
 name: Check Patched branches
+
 on:
   workflow_dispatch:
-  
-  push:
+  create: # runs when a branch or tag is created
     branches:
-      - 'patch/**'
+      - '**'
+
 jobs:
   check-not-disruptive:
+    if: github.event.ref_type == 'branch' && startsWith(github.event.ref, 'patch/')
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582
+      - uses: actions/checkout@v4
 
-    - name: Build with Gradle
-      run: ./gradlew :ms-example-usage:build
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    - name: All tests passed
-      if: success()
-      run: echo "✅ All tests passed!"
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582
 
-    - name: Build failed
-      if: failure()
-      run: echo "❌ Build or tests failed"
+      - name: Build with Gradle
+        run: ./gradlew :ms-example-usage:build
 
+      - name: All tests passed
+        if: success()
+        run: echo "✅ All tests passed!"
 
-
+      - name: Build failed
+        if: failure()
+        run: echo "❌ Build or tests failed"
