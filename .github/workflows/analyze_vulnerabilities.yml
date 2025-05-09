@@ -125,7 +125,13 @@ jobs:
               done < "$FILE"
             fi
           done
-
+      - name: Create Patch Branch, Commit & Push
+        run: |
+          BRANCH_NAME="patch/vulnerable-dependencies-$(date +%s)"
+          git checkout -b "$BRANCH_NAME"
+          git add build.gradle
+          git commit -m "Patch vulnerable dependencies"
+          git push origin "$BRANCH_NAME"
       - name: Show Final build.gradle (library)
         working-directory: library-example
         run: cat build.gradle
