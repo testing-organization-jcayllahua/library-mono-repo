@@ -1,9 +1,7 @@
 name: Check Patched branches
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - patch/**
+  create:
 jobs:
   check-not-disruptive:
     runs-on: ubuntu-latest
