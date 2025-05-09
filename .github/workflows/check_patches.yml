@@ -1,6 +1,5 @@
 name: Check Patched branches
 on:
-  workflow_dispatch:
   create:
 jobs:
   check-not-disruptive:
