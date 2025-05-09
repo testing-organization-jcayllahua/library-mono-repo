@@ -14,7 +14,7 @@ jobs:
       - name: Fetch Vulnerabilities
         id: fetch_vulnerabilities
         env:
-          API_TOKEN: ${{ secrets.API_TOKEN }}
+          API_TOKEN: ${{ secrets.API_TOKEN_GH }}
         run: |
           QUERY=$(cat <<'EOF'
           {
