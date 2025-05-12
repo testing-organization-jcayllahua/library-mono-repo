@@ -5,14 +5,19 @@ services:
     environment:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: "Peru#123"
+      MSSQL_PID: "Standard"
     ports:
       - "1433:1433"
+    volumes:
+#        - db_data:/var/opt/mssql/data
+        - ./init-scripts:/docker-entrypoint-initdb.d
     healthcheck:
       test: [ "CMD", "bash", "-c", "until /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Peru#123' -Q 'SELECT 1'; do echo 'Waiting for SQL Server'; sleep 5; done; echo 'SQL Server is ready'" ]
+
     command: >
       bash -c "
-        /opt/mssql/bin/sqlservr & 
-        sleep 20 &&
+        /opt/mssql/bin/sqlservr &
+        sleep 30 &&
         /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Peru#123' -Q \"IF DB_ID('example_db') IS NULL CREATE DATABASE [example_db];\" &&
         /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Peru#123' -d example_db -Q \"CREATE TABLE customer (id UNIQUEIDENTIFIER PRIMARY KEY, first_name NVARCHAR(50), last_name NVARCHAR(50), email NVARCHAR(255), phone_number NVARCHAR(20), created_at DATETIME2, updated_at DATETIME2);\" &&
         tail -f /dev/null
@@ -32,3 +37,6 @@ services:
       SPRING_DATASOURCE_URL: "jdbc:sqlserver://db_test:1433;databaseName=example_db"
       SPRING_DATASOURCE_USERNAME: "sa"
       SPRING_DATASOURCE_PASSWORD: "Peru#123"
+
+volumes:
+  db_data:
