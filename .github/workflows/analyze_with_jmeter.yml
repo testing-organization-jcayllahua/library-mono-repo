@@ -155,9 +155,17 @@ jobs:
         working-directory: library-example
         run: cat build.gradle
 
-      - name: Run docker compose
+      - name: Run docker compose with retry
+        working-directory: ms-example-usge
         run: |
-          docker ps
+          set -e
+          docker compose up || {
+            echo "First attempt failed, retrying..."
+            docker compose down
+            sleep 5
+            docker compose up
+          }
+
 
           
       - name: Prepare JMeter Test Files
@@ -171,7 +179,7 @@ jobs:
       - name: Run JMeter Tests
         uses: rbhadti94/apache-jmeter-action@v0.5.0
         with:
-          testFilePath: tests/sample_test.jmx
+          testFilePath: tests/sample-test.jmx
           outputReportsFolder: reports/
           args: "--loglevel INFO"
 
