@@ -6,7 +6,5 @@ services:
     container_name: ms-example-usage
     ports:
         - "8080:8080"
-    environment:
-      - R2DBC_URL=${R2DBC_URL}
-      - R2DBC_USERNAME=${R2DBC_USERNAME}
-      - R2DBC_PASSWORD=${R2DBC_PASSWORD}
+    env_file:
+      - .env

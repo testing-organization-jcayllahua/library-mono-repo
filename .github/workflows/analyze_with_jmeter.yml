@@ -144,7 +144,7 @@ jobs:
             fi
           done
       - name: Build with Gradle
-        run: ./gradlew :ms-example-usage:build
+        run: export $(grep -v '^#' ms-example-usage/.env | xargs) && ./gradlew :ms-example-usage:build
   
       - name: All tests passed
         if: success()
