@@ -14,9 +14,6 @@ jobs:
       - name: Set up Docker Compose
         uses: docker/setup-compose-action@v1
 
-      - name: Pull DB Image
-        run: docker pull mcr.microsoft.com/mssql/server:2022-latest
-
       - name: Pull JDK
         run: docker pull openjdk:17-jdk-slim
         
@@ -172,44 +169,42 @@ jobs:
             docker compose up
           }
 
+      - name: Prepare JMeter Test Files
+        run: |
+          mkdir -p tests
+          # Copy your JMX file to the tests directory
+          cp ms-example-usage/jmeter_tests.jmx tests/
+          # Copy your CSV file to the tests directory
+          cp ms-example-usage/customers.csv tests/
 
-          
-#      - name: Prepare JMeter Test Files
-#        run: |
-#          mkdir -p tests
-#          # Copy your JMX file to the tests directory
-#          cp ms-example-usage/jmeter_tests.jmx tests/
-#          # Copy your CSV file to the tests directory
-#          cp ms-example-usage/customers.csv tests/
-#
-#      - name: Run JMeter Tests
-#        uses: rbhadti94/apache-jmeter-action@v0.5.0
-#        with:
-#          testFilePath: tests/sample-test.jmx
-#          outputReportsFolder: reports/
-#          args: "--loglevel INFO"
-#
-#      - name: Run JMeter Tests with Custom Configuration
-#        uses: rbhadti94/apache-jmeter-action@v0.7.0
-#        with:
-#          testFilePath: tests/sample_test.jmx
-#          outputReportsFolder: reports/
-#          args: "--loglevel INFO -JMyProperty=Value"
-#          plugins: "jpgc-casutg"
-#
-#      - name: Archive JMeter Test Reports
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: jmeter-test-results
-#          path: reports/
-#          retention-days: 7
-#
-#      # Optional: Fail the workflow if JMeter tests fail
-#      - name: Check JMeter Test Results
-#        run: |
-#          # This is a simple example. You might want to add more sophisticated
-#          # error checking based on JMeter's output
-#          if [ -z "$(ls -A reports/)" ]; then
-#            echo "No JMeter reports found"
-#            exit 1
-#          fi
+      - name: Run JMeter Tests
+        uses: rbhadti94/apache-jmeter-action@v0.5.0
+        with:
+          testFilePath: tests/sample-test.jmx
+          outputReportsFolder: reports/
+          args: "--loglevel INFO"
+
+      - name: Run JMeter Tests with Custom Configuration
+        uses: rbhadti94/apache-jmeter-action@v0.7.0
+        with:
+          testFilePath: tests/sample_test.jmx
+          outputReportsFolder: reports/
+          args: "--loglevel INFO -JMyProperty=Value"
+          plugins: "jpgc-casutg"
+
+      - name: Archive JMeter Test Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-test-results
+          path: reports/
+          retention-days: 7
+
+      # Optional: Fail the workflow if JMeter tests fail
+      - name: Check JMeter Test Results
+        run: |
+          # This is a simple example. You might want to add more sophisticated
+          # error checking based on JMeter's output
+          if [ -z "$(ls -A reports/)" ]; then
+            echo "No JMeter reports found"
+            exit 1
+          fi
