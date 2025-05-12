@@ -175,6 +175,8 @@ jobs:
             sleep 15
             docker compose up -d
           }
+      - name: Show Running
+        run: docker ps
 
       - name: Prepare JMeter Test Files
         run: |
