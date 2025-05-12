@@ -208,3 +208,6 @@ jobs:
             echo "No JMeter reports found"
             exit 1
           fi
+      - name: Docker Compose Down
+        working-directory: ms-example-usage
+        run: docker compose down
