@@ -60,7 +60,15 @@
               </elementProp>
             </collectionProp>
           </elementProp>
-          <hashTree/>
+          <hashTree>
+            <!-- JSON Extractor to capture customerId -->
+            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract customerId" enabled="true">
+              <stringProp name="JSONPostProcessor.referenceNames">customerId</stringProp>
+              <stringProp name="JSONPostProcessor.jsonPathExpressions">$.id</stringProp>
+              <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+              <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+            </JSONPostProcessor>
+          </hashTree>
         </HTTPSamplerProxy>
 
         <!-- PUT Update Customer -->
