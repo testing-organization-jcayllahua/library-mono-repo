@@ -155,7 +155,13 @@ jobs:
         uses: hoverkraft-tech/compose-action@v2.0.1
         with:
           compose-file: "./ms-example-usage/docker-compose.yml"
-        
+
+      - name: Retry docker
+        if: failure()
+        uses: hoverkraft-tech/compose-action@v2.0.1
+        with:
+          compose-file: "./ms-example-usage/docker-compose.yml"
+          
       - name: Prepare JMeter Test Files
         run: |
           mkdir -p tests
