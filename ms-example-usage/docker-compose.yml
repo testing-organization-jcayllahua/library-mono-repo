@@ -1,7 +1,7 @@
 services:
   database:
     container_name: db_test
-    image: mcr.microsoft.com/mssql/server
+    image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: "Peru#123"
@@ -33,10 +33,6 @@ services:
     depends_on:
       database:
         condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: "jdbc:sqlserver://db_test:1433;databaseName=example_db"
-      SPRING_DATASOURCE_USERNAME: "sa"
-      SPRING_DATASOURCE_PASSWORD: "Peru#123"
 
 volumes:
   db_data:
