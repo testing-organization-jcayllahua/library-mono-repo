@@ -186,6 +186,9 @@ jobs:
           # Copy your CSV file to the tests directory
           cp ms-example-usage/customers.csv tests/
 
+      - name: Add Delay Before JMeter Tests
+        run: sleep 30
+        
       - name: Run JMeter Tests
         uses: rbhadti94/apache-jmeter-action@v0.5.0
         with:
