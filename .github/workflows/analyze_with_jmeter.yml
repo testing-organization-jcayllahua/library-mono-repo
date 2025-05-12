@@ -156,7 +156,7 @@ jobs:
         run: cat build.gradle
 
       - name: Run docker compose with retry
-        working-directory: ms-example-usge
+        working-directory: ms-example-usage
         run: |
           set -e
           docker compose up || {
