@@ -180,9 +180,9 @@ jobs:
           plugins: "jpgc-casutg"
 
       - name: Archive JMeter Test Reports
-        uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v1
         with:
-          name: jmeter-reports
+          name: jmeter-test-results
           path: reports/
           retention-days: 7
 
