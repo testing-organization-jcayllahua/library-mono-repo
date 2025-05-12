@@ -21,6 +21,13 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
+          
+      - name: Write .env file with secrets
+        working-directory: ms-example-usage
+        run: |
+          echo "R2DBC_URL=${{ secrets.R2DBC_URL }}" >> .env
+          echo "R2DBC_USERNAME=${{ secrets.R2DBC_USERNAME }}" >> .env
+          echo "R2DBC_PASSWORD=${{ secrets.R2DBC_PASSWORD }}" >> .env
 
       - name: Fetch Vulnerabilities
         id: fetch_vulnerabilities
