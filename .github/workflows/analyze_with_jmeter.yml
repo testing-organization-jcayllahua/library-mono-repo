@@ -169,12 +169,12 @@ jobs:
         working-directory: ms-example-usage
         run: |
           set -e
-          docker compose up -d & || {
+          docker compose up -d || {
             echo "First attempt failed, retrying..."
             docker compose down
             sleep 15
-            docker compose up -d &
-          }
+            docker compose up -d
+          } &
       - name: Show Running
         run: docker ps
 
