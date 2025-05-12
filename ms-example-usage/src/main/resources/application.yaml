@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: ms-example-usage
+  r2dbc:
+    url: r2dbc:pool:mssql://localhost:1433/example_db?trustServerCertificate=true
+    username: sa
+    password: 'Peru#123'
+

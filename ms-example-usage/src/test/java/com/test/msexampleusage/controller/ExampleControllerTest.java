@@ -1,6 +1,7 @@
 package com.test.msexampleusage.controller;
 
 import com.test.libraryexample.MyService;
+import com.test.msexampleusage.interfaces.rest.controller.ExampleController;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

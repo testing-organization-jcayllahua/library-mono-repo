@@ -19,10 +19,14 @@ repositories {
 
 dependencies {
     implementation project(':library-example')
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
+    runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc'
+    runtimeOnly 'io.r2dbc:r2dbc-mssql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    implementation 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 }
 test {
     useJUnitPlatform()

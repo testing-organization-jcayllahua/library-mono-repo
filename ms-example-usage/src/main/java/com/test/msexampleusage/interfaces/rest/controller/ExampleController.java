@@ -1,4 +1,4 @@
-package com.test.msexampleusage.controller;
+package com.test.msexampleusage.interfaces.rest.controller;
 
 import com.test.libraryexample.MyService;
 import org.springframework.web.bind.annotation.GetMapping;
