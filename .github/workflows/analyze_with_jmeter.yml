@@ -173,21 +173,21 @@ jobs:
         run: |
           mkdir -p tests
           # Copy your JMX file to the tests directory
-          cp ms-example-usage/jmeter_tests.jmx tests/
+          cp ms-example-usage/jmeter-tests.jmx tests/
           # Copy your CSV file to the tests directory
           cp ms-example-usage/customers.csv tests/
 
       - name: Run JMeter Tests
         uses: rbhadti94/apache-jmeter-action@v0.5.0
         with:
-          testFilePath: tests/sample-test.jmx
+          testFilePath: tests/jmeter-tests.jmx
           outputReportsFolder: reports/
           args: "--loglevel INFO"
 
       - name: Run JMeter Tests with Custom Configuration
         uses: rbhadti94/apache-jmeter-action@v0.7.0
         with:
-          testFilePath: tests/sample_test.jmx
+          testFilePath: tests/jmeter-tests.jmx
           outputReportsFolder: reports/
           args: "--loglevel INFO -JMyProperty=Value"
           plugins: "jpgc-casutg"
