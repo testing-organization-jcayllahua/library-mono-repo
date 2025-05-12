@@ -25,9 +25,9 @@ jobs:
       - name: Write .env file with secrets
         working-directory: ms-example-usage
         run: |
-          echo "R2DBC_URL=${{ secrets.R2DBC_URL }}" >> .env
-          echo "R2DBC_USERNAME=${{ secrets.R2DBC_USERNAME }}" >> .env
-          echo "R2DBC_PASSWORD=${{ secrets.R2DBC_PASSWORD }}" >> .env
+          echo "R2DBC_URL=${{ secrets.AZURE_DB_URI_R2DBC }}" >> .env
+          echo "R2DBC_USERNAME=${{ secrets.AZURE_DB_USER }}" >> .env
+          echo "R2DBC_PASSWORD=${{ secrets.AZURE_DB_PASSWORD }}" >> .env
 
       - name: Fetch Vulnerabilities
         id: fetch_vulnerabilities
