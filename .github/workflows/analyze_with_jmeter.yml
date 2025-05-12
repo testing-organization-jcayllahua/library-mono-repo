@@ -172,7 +172,7 @@ jobs:
           args: "--loglevel INFO"
 
       - name: Run JMeter Tests with Custom Configuration
-        uses: rbhadti94/apache-jmeter-action@v0.5.0
+        uses: rbhadti94/apache-jmeter-action@v0.7.0
         with:
           testFilePath: tests/sample_test.jmx
           outputReportsFolder: reports/
