@@ -193,9 +193,6 @@ jobs:
           # Copy your CSV file to the tests directory
           cp ms-example-usage/customers.csv tests/
 
-      - name: Add Delay Before JMeter Tests
-        run: sleep 30
-
       - name: Run JMeter Tests
         uses: rbhadti94/apache-jmeter-action@v0.7.0
         with:
@@ -210,6 +207,9 @@ jobs:
           path: reports/
           retention-days: 7
 
+      - name: Show Logs After Tests
+        run: docker logs my-app
+        
       # Optional: Fail the workflow if JMeter tests fail
       - name: Check JMeter Test Results
         run: |
