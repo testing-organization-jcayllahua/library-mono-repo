@@ -112,7 +112,7 @@ export default function () {
   
   check(getAllResponse, {
     'Get All successful': (r) => r.status === 200,
-    'Response contains data array': (r) => Array.isArray(r.json('data')),
+    'Response contains data array': (r) => Array.isArray(r.json()),
   });
   
   // Step 3: Get Specific Customer
