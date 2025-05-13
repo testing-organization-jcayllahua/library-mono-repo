@@ -2,7 +2,7 @@ spring:
   application:
     name: ms-example-usage
   r2dbc:
-    url: ${R2DBC_URL}
-    username: ${R2DBC_USERNAME}
-    password: ${R2DBC_PASSWORD}
+    url: r2dbc:pool:mssql://jcayllahua.database.windows.net:1433/testing_db?trustServerCertificate=false
+    username: jcayllahua
+    password: '@K7ZWT7#bw%Y8T@^xfv7$FAxT63^@jVQMq8rC4R7'
 
