@@ -196,6 +196,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: k6-results
-          path: ./ms-example-usage/summary.html
+          path: ./summary.html
           retention-days: 1
           
