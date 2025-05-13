@@ -184,14 +184,6 @@ jobs:
           path: |
             ./ms-example-usage/k6-tests*.js 
 
-      - name: Show Logs
-        run: docker logs my-app
-
-      - name: Show files
-        run: |
-          cd ./ms-example-usage
-          ls
-
       - name: Archive K6 Test Reports
         uses: actions/upload-artifact@v4
         with:
