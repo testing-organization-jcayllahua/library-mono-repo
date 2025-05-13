@@ -177,12 +177,12 @@ jobs:
           timeout 120 bash -c 'while ! curl -sSf http://localhost:8080/api/v1/customers >/dev/null; do 
             sleep 5
             docker compose ps
-            docker compose logs --tail=20 your-service
+            docker compose logs --tail=20 example-app
           done'
 
       - name: Check container networking
         run: |
-          docker compose exec your-service netstat -tulpn | grep 8080
+          docker compose exec example-app netstat -tulpn | grep 8080
           # Should show: tcp6 0 0 :::8080 :::* LISTEN   
 
       - name: Verify port accessibility
@@ -190,7 +190,7 @@ jobs:
           netstat -tulpn | grep 8080
           curl -v http://localhost:8080/api/v1/customers
           
-          docker run --network container:$(docker compose ps -q your-service) appropriate/curl \
+          docker run --network container:$(docker compose ps -q example-app) appropriate/curl \
             -v http://localhost:8080/api/v1/customers
 
       - name: Show Running
