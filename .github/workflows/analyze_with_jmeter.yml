@@ -208,20 +208,12 @@ jobs:
         run: sleep 30
 
       - name: Run JMeter Tests
-        uses: rbhadti94/apache-jmeter-action@v0.5.0
-        with:
-          testFilePath: tests/jmeter-tests.jmx
-          outputReportsFolder: reports/
-          args: "--loglevel INFO"
-
-      - name: Run JMeter Tests with Custom Configuration
         uses: rbhadti94/apache-jmeter-action@v0.7.0
         with:
           testFilePath: tests/jmeter-tests.jmx
           outputReportsFolder: reports/
-          args: "--loglevel INFO -JMyProperty=Value"
-          plugins: "jpgc-casutg"
-
+          args: "--loglevel INFO"
+          
       - name: Archive JMeter Test Reports
         uses: actions/upload-artifact@v4
         with:
