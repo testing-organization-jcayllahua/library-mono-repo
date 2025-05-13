@@ -208,7 +208,7 @@ jobs:
         run: sleep 30
 
       - name: Run JMeter Tests
-        uses: rbhadti94/apache-jmeter-action@v0.5.0
+        uses: rbhadti94/apache-jmeter-action@v0.7.0
         with:
           testFilePath: tests/jmeter-tests.jmx
           outputReportsFolder: reports/
