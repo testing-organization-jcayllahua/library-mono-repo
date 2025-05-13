@@ -168,7 +168,7 @@ jobs:
       - name: Run docker
         working-directory: ms-example-usage
         run: |
-          export $(grep -v '^#' .env | xargs) && java -jar ms-example-usage-0.0.1-SNAPSHOT.jar &
+          export $(grep -v '^#' .env | xargs) && java -jar ./build/libs/ms-example-usage-0.0.1-SNAPSHOT.jar &
 
       - name: Verify port accessibility
         run: |
