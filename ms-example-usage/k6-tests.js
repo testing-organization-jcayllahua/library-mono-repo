@@ -1,42 +1,84 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { SharedArray } from 'k6/data';
-import { parseCSV } from 'https://jslib.k6.io/papaparse/5.1.1/index.js';
 
-// Load CSV data - make sure the path to your CSV file is correct
-const customers = new SharedArray('customers', function() {
-  // Load the CSV file and parse it using Papa Parse
-  return parseCSV(open('.library-mono-repo/ms-example-usage/customers.csv'), { header: true }).data;
-});
+// Hard-coded user data instead of loading from CSV
+const users = [
+  {
+    id: '123e4567-e89b-12d3-a456-426614174000',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'john.doe@example.com',
+    phoneNumber: '+51925685987',
+    createdAt: '2025-05-10T12:30:45',
+    updatedAt: '2025-05-11T09:15:22',
+  },
+  {
+    id: '223e4567-e89b-12d3-a456-426614174001',
+    firstName: 'Jane',
+    lastName: 'Smith',
+    email: 'jane.smith@example.com',
+    phoneNumber: '+51925685988',
+    createdAt: '2025-05-10T13:15:30',
+    updatedAt: '2025-05-11T10:20:10',
+  },
+  {
+    id: '323e4567-e89b-12d3-a456-426614174002',
+    firstName: 'Bob',
+    lastName: 'Johnson',
+    email: 'bob.johnson@example.com',
+    phoneNumber: '+51925685989',
+    createdAt: '2025-05-10T14:45:00',
+    updatedAt: '2025-05-11T11:05:00',
+  },
+  {
+    id: '423e4567-e89b-12d3-a456-426614174003',
+    firstName: 'Alice',
+    lastName: 'Williams',
+    email: 'alice.williams@example.com',
+    phoneNumber: '+51925685990',
+    createdAt: '2025-05-10T15:10:05',
+    updatedAt: '2025-05-11T12:40:00',
+  },
+  {
+    id: '523e4567-e89b-12d3-a456-426614174004',
+    firstName: 'Tom',
+    lastName: 'Brown',
+    email: 'tom.brown@example.com',
+    phoneNumber: '+51925685991',
+    createdAt: '2025-05-10T16:00:00',
+    updatedAt: '2025-05-11T13:30:45',
+  }
+];
 
 export const options = {
   vus: 5,      // 5 virtual users (same as Thread Group num_threads)
-  iterations: 5, // Each VU will execute the script once (equivalent to one loop iteration)
+  iterations: 5, // Each VU will execute the script once
   thresholds: {
     http_req_duration: ['p(95)<1000'], // 95% of requests should be below 1s
   },
 };
 
 export default function () {
-  // Get the current customer data (using VU number as index)
-  const customerIndex = __VU - 1;
+  // Get the current user data (using VU number as index)
+  const userIndex = __VU - 1;
   
-  if (customerIndex >= customers.length) {
-    console.log(`No more customer data available for VU ${__VU}. Skipping.`);
+  if (userIndex >= users.length) {
+    console.log(`No more user data available for VU ${__VU}. Skipping.`);
     return;
   }
   
-  const customer = customers[customerIndex];
+  const user = users[userIndex];
+  console.log(`VU ${__VU} using user: ${user.firstName} ${user.lastName}`);
   
   // Step 1: Create Customer
   const createPayload = JSON.stringify({
-    id: customer.id,
-    firstName: customer.firstName,
-    lastName: customer.lastName,
-    email: customer.email,
-    phoneNumber: customer.phoneNumber,
-    createdAt: customer.createdAt,
-    updatedAt: customer.updatedAt
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    phoneNumber: user.phoneNumber,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt
   });
   
   const createHeaders = { 'Content-Type': 'application/json' };
@@ -51,14 +93,14 @@ export default function () {
     'Response has id': (r) => r.json('data.id') !== undefined,
   });
   
-  // Extract ID for future use (similar to JSON Extractor in JMeter)
+  // Extract ID for future use
   let extractedId;
   try {
     extractedId = createResponse.json('data.id');
     console.log(`Created customer with ID: ${extractedId}`);
   } catch (e) {
-    // If the JSON parsing fails, use the original ID from the CSV
-    extractedId = customer.id;
+    // If the JSON parsing fails, use the original ID
+    extractedId = user.id;
     console.log(`Failed to extract ID from response, using original ID: ${extractedId}`);
   }
   
@@ -84,7 +126,7 @@ export default function () {
     'Correct customer returned': (r) => r.json('data.id') === extractedId,
   });
   
-  // Step 4: Delete Customer (this was in your JMeter error logs but not in the JMX)
+  // Step 4: Delete Customer
   const deleteResponse = http.del(`http://localhost:8080/api/v1/customers/${extractedId}`, null, {
     headers: createHeaders,
     tags: { name: 'DeleteCustomer' }
@@ -94,25 +136,17 @@ export default function () {
     'Delete successful': (r) => r.status === 200 || r.status === 204,
   });
   
-  // Add a small pause between iterations to simulate real user behavior
+  // Print summary for this VU
+  console.log(`VU ${__VU} completed all operations for user: ${user.firstName} ${user.lastName}`);
+  
+  // Add a small pause between iterations
   sleep(1);
 }
 
-/*
-To run this test:
-1. Save this script as script.js
-2. Make sure your customers.csv file is in the same directory
-3. Run with: k6 run script.js
-
-Add more options for larger tests:
-- Ramp up: export const options = { 
-    stages: [
-      { duration: '30s', target: 5 },   // Ramp up to 5 users over 30 seconds
-      { duration: '1m', target: 5 },    // Stay at 5 users for 1 minute
-      { duration: '30s', target: 0 },   // Ramp down to 0 users
-    ]
+import { htmlReport } from "https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js";
+// Then add this at the end of your test:
+export function handleSummary(data) {
+  return {
+    "summary.html": htmlReport(data),
   };
-
-- Generate HTML report with the browser-based UI extension:
-  k6 run --out web-dashboard=export=results.html script.js
-*/
+}
