@@ -178,6 +178,8 @@ jobs:
           
       - name: Show Running
         run: docker ps
+      - name: show env
+        run: cat ms-example-usage/.env
 
       - name: Show Logs
         run: docker logs my-app
