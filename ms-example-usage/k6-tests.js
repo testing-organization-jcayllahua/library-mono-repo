@@ -6,7 +6,7 @@ import { parseCSV } from 'https://jslib.k6.io/papaparse/5.1.1/index.js';
 // Load CSV data - make sure the path to your CSV file is correct
 const customers = new SharedArray('customers', function() {
   // Load the CSV file and parse it using Papa Parse
-  return parseCSV(open('./customers.csv'), { header: true }).data;
+  return parseCSV(open('./ms-example-usage/customers.csv'), { header: true }).data;
 });
 
 export const options = {
