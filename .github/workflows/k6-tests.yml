@@ -16,7 +16,7 @@ jobs:
       - name: Pull JDK
         run: docker pull openjdk:17-jdk-slim
         
-      - uses: grafana/setup-k6-action@v1.2.0
+      - uses: grafana/setup-k6-action@v1
 
       - name: Set up Git
         run: |
