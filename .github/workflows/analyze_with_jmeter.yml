@@ -169,7 +169,7 @@ jobs:
         working-directory: ms-example-usage
         run: |
           docker compose up -d
-          docker compose logs -f your-service &  # Keep logs streaming
+          docker compose logs -f example-app &  # Keep logs streaming
 
       - name: Wait for service readiness
         run: |
