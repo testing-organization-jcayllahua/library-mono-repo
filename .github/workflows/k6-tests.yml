@@ -191,13 +191,11 @@ jobs:
         run: |
           cd ./ms-example-usage
           ls
-          cd ..
-          ls
 
       - name: Archive K6 Test Reports
         uses: actions/upload-artifact@v4
         with:
           name: k6-results
-          path: ms-example-usage/summary.html
+          path: ./ms-example-usage/summary.html
           retention-days: 1
           
