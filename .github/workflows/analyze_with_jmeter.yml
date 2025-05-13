@@ -5,6 +5,7 @@ on:
 
 jobs:
   classify-and-patch:
+    using: 'composite'
     runs-on: ubuntu-latest
 
     steps:
