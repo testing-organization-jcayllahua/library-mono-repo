@@ -175,10 +175,12 @@ jobs:
         run: |
           netstat -tulpn | grep 8080
           curl -v http://localhost:8080/api/v1/customers
-    
-
+          
       - name: Show Running
         run: docker ps
+
+      - name: Show Logs
+        run: docker logs my-app
 
       - name: Prepare JMeter Test Files
         run: |
