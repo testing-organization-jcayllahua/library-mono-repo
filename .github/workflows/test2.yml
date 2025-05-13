@@ -189,7 +189,7 @@ jobs:
       - name: JMeter Test
         uses: QAInsights/PerfAction@v5.6.2
         with:
-          test-plan-path: ./ms-example-usage/jmeter-tests.jmx.jmx
+          test-plan-path: ../../ms-example-usage/jmeter-tests.jmx.jmx
           args: "-e -o ./tests/html/"
 
       - name: Show Logs
