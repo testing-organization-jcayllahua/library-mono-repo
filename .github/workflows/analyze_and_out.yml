@@ -148,8 +148,7 @@ jobs:
           done
 
           # Output the patched dependencies list as a string and save it as a step output
-          echo "patched_dependencies=$(IFS=, ; echo "${patched_deps[*]}")" >> "$GITHUB_ENV"
-          echo "::set-output name=patched_dependencies::$(IFS=, ; echo "${patched_deps[*]}")"
+          echo "patched_dependencies=$(IFS=, ; echo "${patched_deps[*]}")" >> "$GITHUB_OUPUT"
 
       - name: Build with Gradle
         run: export $(grep -v '^#' ms-example-usage/.env | xargs) && ./gradlew :ms-example-usage:build
