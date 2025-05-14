@@ -102,7 +102,7 @@ jobs:
             /repos/testing-organization-jcayllahua/library-mono-repo/issues \
             -f "title=🔐 Security Fixes: Test Failed after patching vulnerabilities" \
             -f "body=${body}" \
-            -f "labels[]=security-patch"
+            -f "labels[]=security-patch" \
             -f "type=Security"
             
       - name: Deploy
