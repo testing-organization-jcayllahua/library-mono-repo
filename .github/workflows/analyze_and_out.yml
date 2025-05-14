@@ -74,7 +74,7 @@ jobs:
         id: patch_vulnerabilities
         working-directory: library-example
         run: |
-                    patched_deps=()  # Initialize an array to store patched dependencies
+          patched_deps=()  # Initialize an array to store patched dependencies
 
           patch_gradle() {
             local GROUP=$1
