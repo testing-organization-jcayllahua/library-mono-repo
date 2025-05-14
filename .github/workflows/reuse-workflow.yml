@@ -67,6 +67,7 @@ jobs:
         env:
           DEPS: ${{ needs.call_workflow.outputs.dependencies }}
           BRANCH_NAME: ${{ needs.call_workflow.outputs.branch_created }}
+          GH_TOKEN: ${{ API_TOKEN_GH }}
         run: |
           IFS=',' read -ra deps_array <<< "$DEPS"
       
