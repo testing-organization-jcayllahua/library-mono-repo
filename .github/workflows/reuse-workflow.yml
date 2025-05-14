@@ -1,0 +1,13 @@
+name: Reusing Worfklow
+on:
+  workflow_dispatch:
+jobs:
+  call_workflow:
+    uses: ./.github/workflows/analyze_and_out.yml
+
+  show_output:
+    runs-on: ubuntu-latest
+    needs: call_workflow
+    steps:
+      - name: show it
+      - run: echo ${{needs.call_workflow.outputs.dependencies}}
