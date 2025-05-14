@@ -7,11 +7,7 @@ on:
        value: ${{ jobs.patch_vulnerabilities.outputs.patched_dependencies }}
 
 jobs:
-  patch_vulnerabilities:
-    runs-on: ubuntu-latest
-    outputs:
-      patched_dependencies: ${{ steps.patch_vulnerabilities.outputs.patched_dependencies }}  # Mapping the step output to a job output
-    steps:
+   steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         
@@ -19,7 +15,6 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-
       - name: Fetch Vulnerabilities
         id: fetch_vulnerabilities
         env:
@@ -42,16 +37,14 @@ jobs:
             https://api.github.com/graphql)
           echo "$RESPONSE" > vulnerabilities.json
           echo "$RESPONSE" | jq -c '.data.organization.repository.vulnerabilityAlerts.nodes[]' > vulnerabilities_list.json
-
+          
       - name: Classify Vulnerable Dependencies in library subproject
         working-directory: library-example
         run: |
           gradle dependencies > gradle_dependencies.txt
           gradle buildEnvironment > gradle_build_env.txt
-
           touch found_in_dependencies.txt
           touch found_in_build_env.txt
-
           jq -c '.' ../vulnerabilities_list.json | while read -r vuln; do
             PACKAGE=$(echo "$vuln" | jq -r '.securityVulnerability.package.name')
             if grep -q "$PACKAGE" gradle_dependencies.txt; then
@@ -61,6 +54,7 @@ jobs:
               echo "$vuln" >> found_in_build_env.txt
             fi
           done
+          
       - name: Patch Vulnerable Dependencies in library subproject
         id: patch_vulnerabilities
         working-directory: library-example
