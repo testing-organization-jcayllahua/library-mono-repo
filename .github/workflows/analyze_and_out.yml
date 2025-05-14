@@ -5,6 +5,9 @@ on:
      dependencies:
        description: "The dependencies modified and new versions"
        value: ${{ jobs.patch_vulnerabilities.outputs.patched_dependencies }}
+    secrets:
+      token:
+        required: true
 
 jobs:
   patch_vulnerabilities:
@@ -22,7 +25,7 @@ jobs:
           git config user.email 'github-actions[bot]@users.noreply.github.com'
       - name: Fetch Vulnerabilities
         env:
-          API_TOKEN: ${{ secrets.API_GRAPHQL }}
+          API_TOKEN: ${{ secrets.token }}
         run: |
           echo "${{ github.event.repository.name }}"
           echo "${{ github.repository_owner }}"
