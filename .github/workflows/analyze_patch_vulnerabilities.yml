@@ -142,7 +142,7 @@ jobs:
 
       - name: Create Patch Branch, Commit & Push
         run: |
-          BRANCH_NAME="patch/vulnerable-dependencies-$(date +%s)"
+          BRANCH_NAME="fix/security-patch-$(date +%F)"
           git checkout -b "$BRANCH_NAME"
           git add library-example/build.gradle
           git commit -m "Patch vulnerable dependencies"
