@@ -1,6 +1,10 @@
 name: Analyze & Patch Project Vulnerabilities OUTPUT
 on:
-  workflow_dispatch:
+  workflow_call:
+    outputs:
+     dependencies:
+       description: "The dependencies modified and new versions"
+       value: ${{ jobs.patch_vulnerabilities.outputs.patched_dependencies }}
 
 jobs:
   patch_vulnerabilities:
