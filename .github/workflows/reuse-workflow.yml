@@ -53,6 +53,7 @@ jobs:
       - name: Run Grafana k6 tests
         uses: grafana/run-k6-action@v1.2.0
         with:
+          debug: true
           path: |
             ./ms-example-usage/k6-tests*.js 
 
