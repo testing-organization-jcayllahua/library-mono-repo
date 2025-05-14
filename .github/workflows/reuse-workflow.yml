@@ -5,6 +5,8 @@ jobs:
   call_workflow:
 
     uses: ./.github/workflows/analyze_and_out.yml
+    secrets:
+      token: ${{secrets.API_TOKEN_GH}}
 
   show_output:
     needs: call_workflow
