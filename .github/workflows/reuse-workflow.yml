@@ -13,4 +13,54 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: show it
-        run: echo ${{needs.call_workflow.outputs.dependencies}} ${{needs.call_workflow.outputs.branch_created}}
+        run: echo ${{needs.call_workflow.outputs.dependencies}} 
+        
+  run-and-test:
+    runs-on: ubuntu-latest
+    needs: call_workflow
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{needs.call_workflow.outputs.branch_created}}
+
+      - name: Set up Docker Compose
+        uses: docker/setup-compose-action@v1
+
+      - name: Pull JDK
+        run: docker pull openjdk:17-jdk-slim
+        
+      - uses: grafana/setup-k6-action@v1
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          
+      - name: Show build.gradle (library)
+        working-directory: library-example
+        run: cat build.gradle
+
+      - name: Run docker compose with logs
+        working-directory: ms-example-usage
+        run: |
+          docker build -t my-app .
+          docker run --network host -p 8080:8080 --name my-app --env-file .env my-app &
+          
+      - name: Run Grafana k6 tests
+        uses: grafana/run-k6-action@v1.2.0
+        with:
+          path: |
+            ./ms-example-usage/k6-tests*.js 
+
+      - name: Archive K6 Test Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-results
+          path: ./summary.html
+          retention-days: 1
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
