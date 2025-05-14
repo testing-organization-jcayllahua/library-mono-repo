@@ -62,6 +62,10 @@ jobs:
           name: k6-results
           path: ./summary.html
           retention-days: 1
+
+      - name: show files
+        run: ls
+        
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
