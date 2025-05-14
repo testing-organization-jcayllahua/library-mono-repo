@@ -74,32 +74,32 @@ jobs:
         id: patch_vulnerabilities
         working-directory: library-example
         run: |
-          patched_deps=()  # Initialize an array to store patched dependencies
+                    patched_deps=()  # Initialize an array to store patched dependencies
 
           patch_gradle() {
             local GROUP=$1
             local ARTIFACT=$2
             local VERSION=$3
-          
+
             if [ -z "$VERSION" ] || [ "$VERSION" == "null" ]; then
               echo "WARNING: No patched version found for ${GROUP}:${ARTIFACT}, skipping..."
               return 1
             fi
-          
+
             local PATCH_LINE="force '${GROUP}:${ARTIFACT}:${VERSION}'"
             local DIRECT_DEP_REGEX="['\"]${GROUP}:${ARTIFACT}:[^'\"]*['\"]"
             local NEW_DEP="'${GROUP}:${ARTIFACT}:${VERSION}'"
-          
+
             if grep -qE "$DIRECT_DEP_REGEX" build.gradle; then
               echo "→ Updating direct dependency for ${GROUP}:${ARTIFACT} in dependencies block"
               sed -i -E "s|$DIRECT_DEP_REGEX|$NEW_DEP|g" build.gradle
               echo "✓ Patched as direct dependency only"
-              patched_deps+=("${GROUP}:${ARTIFACT},${PATCHED_VERSION}")
+              patched_deps+=("${GROUP}:${ARTIFACT}:${VERSION}")
               return 0
             fi
-          
+
             echo "→ ${GROUP}:${ARTIFACT} not found directly, patching via resolutionStrategy.force"
-          
+
             if grep -q "configurations.all[[:space:]]*{" build.gradle; then
               if grep -A 10 "configurations.all[[:space:]]*{" build.gradle | grep -q "resolutionStrategy[[:space:]]*{"; then
                 if grep -q "force[[:space:]]*'${GROUP}:${ARTIFACT}:" build.gradle; then
@@ -147,8 +147,11 @@ jobs:
             fi
           done
 
-          # Output the patched dependencies list as a string and save it as a step output
-          echo "patched_dependencies=$(IFS=, ; echo "${patched_deps[*]}")" >> "$GITHUB_OUPUT"
+          # Join patched dependencies
+          joined=$(IFS=, ; echo "${patched_deps[*]}")
+
+          # Export to step output (recommended)
+          echo "patched_dependencies=$joined" >> "$GITHUB_OUTPUT"
 
       - name: Build with Gradle
         run: export $(grep -v '^#' ms-example-usage/.env | xargs) && ./gradlew :ms-example-usage:build
