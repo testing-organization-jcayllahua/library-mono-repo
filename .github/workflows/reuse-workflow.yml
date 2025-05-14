@@ -48,7 +48,7 @@ jobs:
         working-directory: ms-example-usage
         run: |
           docker build -t my-app .
-          docker run --network host -p 8080:8080 --name my-app --env-file .env my-app &
+          docker run --network host -p 8080:8080 --name my-app my-app &
           
       - name: Run Grafana k6 tests
         uses: grafana/run-k6-action@v1.2.0
