@@ -1,0 +1,126 @@
+name: Analyze & Patch Project Vulnerabilities OUTPUT
+on:
+  workflow_dispatch:
+
+jobs:
+  patch_vulnerabilities:
+    runs-on: ubuntu-latest
+    outputs:
+      patched_dependencies: ${{ steps.patch_vulnerabilities.outputs.patched_dependencies }}  # Mapping the step output to a job output
+    steps:
+      - name: Patch Vulnerable Dependencies in library subproject
+        id: patch_vulnerabilities
+        working-directory: library-example
+        run: |
+          patched_deps=()  # Initialize an array to store patched dependencies
+
+          patch_gradle() {
+            local GROUP=$1
+            local ARTIFACT=$2
+            local VERSION=$3
+          
+            if [ -z "$VERSION" ] || [ "$VERSION" == "null" ]; then
+              echo "WARNING: No patched version found for ${GROUP}:${ARTIFACT}, skipping..."
+              return 1
+            fi
+          
+            local PATCH_LINE="force '${GROUP}:${ARTIFACT}:${VERSION}'"
+            local DIRECT_DEP_REGEX="['\"]${GROUP}:${ARTIFACT}:[^'\"]*['\"]"
+            local NEW_DEP="'${GROUP}:${ARTIFACT}:${VERSION}'"
+          
+            if grep -qE "$DIRECT_DEP_REGEX" build.gradle; then
+              echo "→ Updating direct dependency for ${GROUP}:${ARTIFACT} in dependencies block"
+              sed -i -E "s|$DIRECT_DEP_REGEX|$NEW_DEP|g" build.gradle
+              echo "✓ Patched as direct dependency only"
+              patched_deps+=("${GROUP}:${ARTIFACT},${PATCHED_VERSION}")
+              return 0
+            fi
+          
+            echo "→ ${GROUP}:${ARTIFACT} not found directly, patching via resolutionStrategy.force"
+          
+            if grep -q "configurations.all[[:space:]]*{" build.gradle; then
+              if grep -A 10 "configurations.all[[:space:]]*{" build.gradle | grep -q "resolutionStrategy[[:space:]]*{"; then
+                if grep -q "force[[:space:]]*'${GROUP}:${ARTIFACT}:" build.gradle; then
+                  sed -i "s|force[[:space:]]*'${GROUP}:${ARTIFACT}:[^']*'|${PATCH_LINE}|g" build.gradle
+                else
+                  awk -v patch="$PATCH_LINE" '
+                    /resolutionStrategy[[:space:]]*{/ { print; in_block=1; next }
+                    in_block && /^\s*}/ { print "        " patch; in_block=0 }
+                    { print }
+                  ' build.gradle > tmp && mv tmp build.gradle
+                fi
+              else
+                awk -v patch="$PATCH_LINE" '
+                  /configurations.all[[:space:]]*{/ {
+                    print; print "    resolutionStrategy {"; print "        " patch; print "    }"; next
+                  }
+                  { print }
+                ' build.gradle > tmp && mv tmp build.gradle
+              fi
+            else
+              awk -v patch="$PATCH_LINE" '
+                /^dependencies[[:space:]]*{/ {
+                  print "configurations.all {";
+                  print "    resolutionStrategy {";
+                  print "        " patch;
+                  print "    }";
+                  print "}"; print ""; print $0; next;
+                }
+                { print }
+              ' build.gradle > tmp && mv tmp build.gradle
+            fi
+          }
+
+          for FILE in found_in_dependencies.txt found_in_build_env.txt; do
+            if [ -f "$FILE" ]; then
+              while read -r entry; do
+                PACKAGE=$(echo "$entry" | jq -r '.securityVulnerability.package.name')
+                PATCHED_VERSION=$(echo "$entry" | jq -r '.securityVulnerability.firstPatchedVersion.identifier')
+                GROUP=$(echo "$PACKAGE" | cut -d':' -f1)
+                ARTIFACT=$(echo "$PACKAGE" | cut -d':' -f2)
+
+                echo "Patching ${GROUP}:${ARTIFACT} to version ${PATCHED_VERSION}"
+                patch_gradle "$GROUP" "$ARTIFACT" "$PATCHED_VERSION"
+              done < "$FILE"
+            fi
+          done
+
+          # Output the patched dependencies list as a string and save it as a step output
+          echo "patched_dependencies=$(IFS=, ; echo "${patched_deps[*]}")" >> "$GITHUB_ENV"
+          echo "::set-output name=patched_dependencies::$(IFS=, ; echo "${patched_deps[*]}")"
+
+      - name: Build with Gradle
+        run: export $(grep -v '^#' ms-example-usage/.env | xargs) && ./gradlew :ms-example-usage:build
+
+      - name: All tests passed
+        if: success()
+        run: echo "✅ All tests passed!"
+
+      - name: Build failed
+        if: failure()
+        run: echo "❌ Build or tests failed"
+
+      - name: Create Patch Branch, Commit & Push
+        run: |
+          BRANCH_NAME="fix/security-patch-$(TZ=America/Lima date +%F)"
+          git checkout -b "$BRANCH_NAME"
+          git add library-example/build.gradle
+          git commit -m "Patch vulnerable dependencies"
+          git push origin "$BRANCH_NAME"
+          
+      - name: Show Final build.gradle (library)
+        working-directory: library-example
+        run: cat build.gradle
+
+          
+  show_patched_dependencies:
+    runs-on: ubuntu-latest
+    needs: patch_vulnerabilities  # This ensures that show_patched_dependencies depends on patch_vulnerabilities
+    steps:
+      - env:
+          OUTPUT_DEPS: ${{needs.patch_vulnerabilities.outputs.patched_dependencies}}
+        run: echo "$OUTPUT_DEPS"
+
+
+
+
