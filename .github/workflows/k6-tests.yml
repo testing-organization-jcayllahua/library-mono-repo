@@ -182,7 +182,7 @@ jobs:
         uses: grafana/run-k6-action@v1.2.0
         with:
           path: |
-            ./ms-example-usage/k6-tests*.js 
+            ./ms-example-usage/k6-tests-2*.js 
 
       - name: Archive K6 Test Reports
         uses: actions/upload-artifact@v4
