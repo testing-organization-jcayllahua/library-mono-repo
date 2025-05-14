@@ -147,6 +147,6 @@ import { htmlReport } from "https://raw.githubusercontent.com/benc-uk/k6-reporte
 // Then add this at the end of your test:
 export function handleSummary(data) {
   return {
-    "summary.html": htmlReport(data),
+    "index.html": htmlReport(data),
   };
 }
