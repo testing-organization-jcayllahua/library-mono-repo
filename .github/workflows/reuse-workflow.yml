@@ -89,7 +89,6 @@ jobs:
           ## 🔧 Changes Made
           
           ${formatted_changes}
-          - 🔁 Regenerated \`lock\` file to ensure nested dependencies are up-to-date
           
           ## 📚 References
           
