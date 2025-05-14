@@ -21,10 +21,11 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
       - name: Fetch Vulnerabilities
-        id: fetch_vulnerabilities
         env:
           API_TOKEN: ${{ secrets.API_TOKEN_GH }}
         run: |
+          echo "${{ github.event.repository.name }}"
+          echo "${{ github.repository_owner }}"
           QUERY=$(cat <<'EOF'
           {
             "query": "query ($org: String = \"\", $repo: String! = \"\") { organization(login: $org) { repository(name: $repo) { name vulnerabilityAlerts(first: 100, states: OPEN) { nodes { dependencyRelationship vulnerableManifestPath securityVulnerability { advisory { ghsaId summary } severity package { name ecosystem } firstPatchedVersion { identifier } vulnerableVersionRange } } } } } }",
@@ -40,6 +41,8 @@ jobs:
             -H "Content-Type: application/json" \
             -d "$QUERY" \
             https://api.github.com/graphql)
+            
+          echo "$RESPONSE" | jq .
           echo "$RESPONSE" > vulnerabilities.json
           echo "$RESPONSE" | jq -c '.data.organization.repository.vulnerabilityAlerts.nodes[]' > vulnerabilities_list.json
           
