@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       patched_dependencies: ${{ steps.patch_vulnerabilities.outputs.patched_dependencies }}
-      branch_name: ${{ steps.patch_vulnerabilities.outputs.branch_name }}
+      branch_name: ${{ steps.branch_creation.outputs.branch_name }}
     steps:
     
       - name: Checkout repository
@@ -163,9 +163,10 @@ jobs:
         run: echo "❌ Build or tests failed"
 
       - name: Create Patch Branch, Commit & Push
+        id: branch_creation
         run: |
           BRANCH_NAME="fix/security-patch-$(TZ=America/Lima date +%F)"
-          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_ENV"
+          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
           git checkout -b "$BRANCH_NAME"
           git add library-example/build.gradle
           git commit -m "Patch vulnerable dependencies"
