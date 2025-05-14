@@ -69,41 +69,55 @@ jobs:
           BRANCH_NAME: ${{ needs.call_workflow.outputs.branch_created }}
           GH_TOKEN: ${{ secrets.API_TOKEN_GH }}
         run: |
-          IFS=',' read -ra deps_array <<< "$DEPS"
-      
+          IFS=',' read -ra deps_array <<< "$DEPS" 
           formatted_changes=""
+          
           for dep in "${deps_array[@]}"; do
             GROUP=$(echo "$dep" | cut -d':' -f1)
             ARTIFACT=$(echo "$dep" | cut -d':' -f2)
             VERSION=$(echo "$dep" | cut -d':' -f3)
-            formatted_changes+="- ⬆️ Updated \`${GROUP}:${ARTIFACT}\` to \`${VERSION}\`%0A"
+            formatted_changes+="- ⬆️ Updated \`${GROUP}:${ARTIFACT}\` to \`${VERSION}\`\n"
           done
-      
-          body="## 🛡️ Summary%0A%0A"
-          body+="This issue documents the resolution of security vulnerabilities identified in recent dependency scans.%0A%0A"
-          body+="## 🔧 Changes Made%0A%0A"
-          body+="${formatted_changes}"
-          body+="- 🔁 Regenerated \`lock\` file to ensure nested dependencies are up-to-date%0A%0A"
-          body+="## 📚 References%0A%0A"
-          body+="- 📌 Dependabot Alerts%0A"
-          body+="- 🧾 Internal Security Audit%0A"
-          body+="- 🕵️‍♂️ CVE Database (if applicable)%0A%0A"
-          body+="## ✅ Next Steps%0A%0A"
-          body+="- [ ] 🔍 Verify test suite on staging%0A"
-          body+="- [ ] 📦 Monitor deployments for any issues%0A"
-          body+="- [ ] 🔁 Coordinate with security team for final review%0A%0A"
-          body+="#3 pr%0A%0A"
-          body+="🔗 Branch with the fix: [${BRANCH_NAME}](https://github.com/testing-organization/library-mono-repo/tree/${BRANCH_NAME})"
-      
+          
+          # Create the body content with proper newlines
+          body=$(cat <<EOF
+          ## 🛡️ Summary
+          
+          This issue documents the resolution of security vulnerabilities identified in recent dependency scans.
+          
+          ## 🔧 Changes Made
+          
+          ${formatted_changes}
+          - 🔁 Regenerated \`lock\` file to ensure nested dependencies are up-to-date
+          
+          ## 📚 References
+          
+          - 📌 Dependabot Alerts
+          - 🧾 Internal Security Audit
+          - 🕵️‍♂️ CVE Database (if applicable)
+          
+          ## ✅ Next Steps
+          
+          - [ ] 🔍 Verify test suite on staging
+          - [ ] 📦 Monitor deployments for any issues
+          - [ ] 🔁 Coordinate with security team for final review
+          
+          #3 pr
+          
+          🔗 Branch with the fix: [${BRANCH_NAME}](https://github.com/testing-organization-jcayllahua/library-mono-repo/tree/${BRANCH_NAME})
+          EOF
+          )
+          
+          # Use the -F flag for JSON field input which handles escaping properly
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             /repos/testing-organization-jcayllahua/library-mono-repo/issues \
-            -f "title=🔐 Security Fixes: Test Failed after patching vulnerabilities" \
-            -f "body=${body}" \
-            -f "labels[]=security-patch" \
-            -f "type=Security"
+            -F "title=🔐 Security Fixes: Test Failed after patching vulnerabilities" \
+            -F "body=${body}" \
+            -F "labels[]=security-patch" \
+            -F "type=Security"
             
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
