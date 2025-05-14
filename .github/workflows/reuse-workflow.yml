@@ -41,6 +41,9 @@ jobs:
         working-directory: library-example
         run: cat build.gradle
 
+      - name: Build Application
+        run: ./gradlew build
+
       - name: Run docker compose with logs
         working-directory: ms-example-usage
         run: |
