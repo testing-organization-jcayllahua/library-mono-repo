@@ -7,7 +7,12 @@ on:
        value: ${{ jobs.patch_vulnerabilities.outputs.patched_dependencies }}
 
 jobs:
-   steps:
+  patch_vulnerabilities:
+    runs-on: ubuntu-latest
+    outputs:
+      patched_dependencies: ${{ steps.patch_vulnerabilities.outputs.patched_dependencies }}
+    steps:
+    
       - name: Checkout repository
         uses: actions/checkout@v4
         
