@@ -22,7 +22,7 @@ jobs:
           git config user.email 'github-actions[bot]@users.noreply.github.com'
       - name: Fetch Vulnerabilities
         env:
-          API_TOKEN: ${{ secrets.API_TOKEN_GH }}
+          API_TOKEN: ${{ secrets.API_GRAPHQL }}
         run: |
           echo "${{ github.event.repository.name }}"
           echo "${{ github.repository_owner }}"
