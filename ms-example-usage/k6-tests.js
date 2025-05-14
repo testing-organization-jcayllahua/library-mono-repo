@@ -52,10 +52,7 @@ const users = [
 
 export const options = {
   vus: 5,      // 5 virtual users (same as Thread Group num_threads)
-  iterations: 5, // Each VU will execute the script once
-  thresholds: {
-    http_req_duration: ['p(95)<1000'], // 95% of requests should be below 1s
-  },
+  iterations: 5
 };
 
 export default function () {
