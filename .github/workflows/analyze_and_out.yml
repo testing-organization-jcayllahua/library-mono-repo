@@ -36,7 +36,7 @@ jobs:
           EOF
           )
           RESPONSE=$(curl -s -X POST \
-            -H "Authorization: Bearer $API_TOKEN_GH" \
+            -H "Authorization: Bearer $API_TOKEN" \
             -H "Content-Type: application/json" \
             -d "$QUERY" \
             https://api.github.com/graphql)
