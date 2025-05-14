@@ -13,4 +13,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: show it
-        run: echo ${{needs.call_workflow.outputs.dependencies}}
+        run: echo ${{needs.call_workflow.outputs.dependencies}} ${{needs.call_workflow.outputs.branch_created}}
