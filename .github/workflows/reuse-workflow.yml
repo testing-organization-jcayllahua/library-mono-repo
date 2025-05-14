@@ -76,7 +76,8 @@ jobs:
             GROUP=$(echo "$dep" | cut -d':' -f1)
             ARTIFACT=$(echo "$dep" | cut -d':' -f2)
             VERSION=$(echo "$dep" | cut -d':' -f3)
-            formatted_changes+="- ⬆️ Updated \`${GROUP}:${ARTIFACT}\` to \`${VERSION}\`\n"
+            formatted_changes+="- ⬆️ Updated \`${GROUP}:${ARTIFACT}\` to \`${VERSION}\`
+          "
           done
           
           # Create the body content with proper newlines
@@ -104,7 +105,7 @@ jobs:
           
           #3 pr
           
-          🔗 Branch with the fix: [${BRANCH_NAME}](https://github.com/testing-organization-jcayllahua/library-mono-repo/tree/${BRANCH_NAME})
+          🔗 Branch with the fix: [${BRANCH_NAME}](https://github.com/testing-organization/library-mono-repo/tree/${BRANCH_NAME})
           EOF
           )
           
