@@ -55,7 +55,7 @@ jobs:
         with:
           debug: true
           path: |
-            ./ms-example-usage/k6-tests-2*.js 
+            ./ms-example-usage/k6-tests*.js 
 
       - name: Archive K6 Test Reports
         uses: actions/upload-artifact@v4
