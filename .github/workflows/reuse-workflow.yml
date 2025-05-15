@@ -8,13 +8,6 @@ jobs:
     secrets:
       token: ${{secrets.API_TOKEN_GH}}
 
-  show_output:
-    needs: call_workflow
-    runs-on: ubuntu-latest
-    steps:
-      - name: show it
-        run: echo ${{needs.call_workflow.outputs.dependencies}} 
-        
   run-and-test:
     runs-on: ubuntu-latest
     needs: call_workflow
@@ -80,45 +73,49 @@ jobs:
             GROUP=$(echo "$dep" | cut -d':' -f1)
             ARTIFACT=$(echo "$dep" | cut -d':' -f2)
             VERSION=$(echo "$dep" | cut -d':' -f3)
-            formatted_changes+="- ⬆️ Updated \`${GROUP}:${ARTIFACT}\` to \`${VERSION}\`
+            formatted_changes+="- ⬆️ Actualización de \`${GROUP}:${ARTIFACT}\` a \`${VERSION}\`
           "
           done
           
           # Create the body content with proper newlines
           body=$(cat <<EOF
-          ## 🛡️ Summary
+          ## 🛡️ Resumen
           
-          This issue documents the resolution of security vulnerabilities identified in recent dependency scans.
+          Este issue documenta la resolución de vulnerabilidades de seguridad identificadas en escaneos recientes de dependencias. Sin embargo, **las pruebas automatizadas fallaron después de aplicar las correcciones.**
+
+          Por favor, investiga los errores y determina si las fallas están relacionadas con los cambios introducidos o si son problemas preexistentes.
           
-          ## 🔧 Changes Made
+          ## ❌ Resultados de las Pruebas K6
+          
+          - ❗ Algunas pruebas fallaron tras aplicar los parches de seguridad.
+          - 📄 [Ver reporte completo de pruebas K6](https://testing-organization-jcayllahua.github.io/library-mono-repo/index.html)
+
+          ## 🔧 Cambios Realizados
           
           ${formatted_changes}
           
-          ## 📚 References
+          ## 📚 Referencias
           
-          - 📌 Dependabot Alerts
-          - 🧾 Internal Security Audit
-          - 🕵️‍♂️ CVE Database (if applicable)
+          - 📌 Alertas de Dependabot  
+          - 🧾 Auditoría Interna de Seguridad
+          - 🕵️‍♂️ Base de Datos de CVEs (if applicable)
           
-          ## ✅ Next Steps
+          ## ✅ Próximos pasos
           
-          - [ ] 🔍 Verify test suite on staging
-          - [ ] 📦 Monitor deployments for any issues
-          - [ ] 🔁 Coordinate with security team for final review
+          - [ ] 🔍 Verificar el suite de pruebas en staging
+          - [ ] 📦 Monitorear los despliegues en busca de errores
+          - [ ] 🔁 Coordinar con el equipo de seguridad para la revisión final
           
-          #3 pr
-          
-          🔗 Branch with the fix: [${BRANCH_NAME}](https://github.com/testing-organization/library-mono-repo/tree/${BRANCH_NAME})
+          🔗 Rama con la corrección: [${BRANCH_NAME}](https://github.com/testing-organization/library-mono-repo/tree/${BRANCH_NAME})
           EOF
           )
-          
-          # Use the -F flag for JSON field input which handles escaping properly
+
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             /repos/testing-organization-jcayllahua/library-mono-repo/issues \
-            -F "title=🔐 Security Fixes: Test Failed after patching vulnerabilities" \
+            -F "title=🔐 Correcciones de Seguridad: Fallaron las pruebas tras aplicar los parches" \
             -F "body=${body}" \
             -F "labels[]=security-patch" \
             -F "type=Security"
