@@ -187,15 +187,3 @@ jobs:
       - name: Show Final build.gradle (library)
         working-directory: library-example
         run: cat build.gradle
-  show_variables:
-    needs: patch_vulnerabilities
-    runs-on: ubuntu-latest
-    steps:
-      - name: show branch
-        run: echo ${{ needs.patch_vulnerabilities.outputs.branch_name }}
-
-        
-
-
-
-
