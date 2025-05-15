@@ -170,7 +170,7 @@ jobs:
         working-directory: ms-example-usage
         run: |
           docker build -t my-app .
-          docker run -p 8080:8080 --name my-app --env-file .env my-app &
+          docker run --network host -p 8080:8080 --name my-app my-app &
 
       - name: Verify port accessibility
         run: |
