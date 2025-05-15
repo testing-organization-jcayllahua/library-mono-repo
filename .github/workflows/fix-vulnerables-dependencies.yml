@@ -102,7 +102,7 @@ jobs:
           - [ ] 📦 Monitorear los despliegues en busca de errores
           - [ ] 🔁 Coordinar con el equipo de seguridad para la revisión final
           
-          🔗 Rama con la corrección: [${BRANCH_NAME}](https://github.com/testing-organization/library-mono-repo/tree/${BRANCH_NAME})
+          🔗 Rama con la corrección: [${BRANCH_NAME}](https://github.com/testing-organization-jcayllahua/library-mono-repo/tree/${BRANCH_NAME})
           EOF
           )
 
