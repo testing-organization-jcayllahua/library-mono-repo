@@ -2,7 +2,7 @@ name: Analyze Patch Vulnerabilities
 on:
   workflow_dispatch:
 jobs:
-  call_workflow:
+  analyzing_vulnerabilities:
 
     uses: ./.github/workflows/analyze_and_out.yml
     secrets:
@@ -10,12 +10,12 @@ jobs:
 
   run-and-test:
     runs-on: ubuntu-latest
-    needs: call_workflow
+    needs: analyzing_vulnerabilities
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{needs.call_workflow.outputs.branch_created}}
+          ref: ${{needs.analyzing_vulnerabilities.outputs.branch_created}}
 
       - name: Set up Docker Compose
         uses: docker/setup-compose-action@v1
@@ -58,8 +58,8 @@ jobs:
       - name: Create Security Patch Issue
         if: ${{ failure() }}
         env:
-          DEPS: ${{ needs.call_workflow.outputs.dependencies }}
-          BRANCH_NAME: ${{ needs.call_workflow.outputs.branch_created }}
+          DEPS: ${{ needs.analyzing_vulnerabilities.outputs.dependencies }}
+          BRANCH_NAME: ${{ needs.analyzing_vulnerabilities.outputs.branch_created }}
           GH_TOKEN: ${{ secrets.API_TOKEN_GH }}
         run: |
           IFS=',' read -ra deps_array <<< "$DEPS" 
