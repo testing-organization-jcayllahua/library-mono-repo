@@ -1,4 +1,4 @@
-name: Analyze & Patch Project Vulnerabilities OUTPUT
+name: Analyze & Patch Project Vulnerabilities
 on:
   workflow_call:
     outputs:
