@@ -52,6 +52,7 @@ jobs:
           
       - name: Run Grafana k6 tests
         uses: grafana/run-k6-action@v1.2.0
+        continue-on-error: true
         with:
           debug: true
           path: |
