@@ -30,12 +30,8 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           
-      - name: Show build.gradle (library)
-        working-directory: library-example
-        run: cat build.gradle
-
       - name: Build Application
-        run: ./gradlew build
+        run: ./gradlew :ms-example-usage:build
 
       - name: Run docker compose with logs
         working-directory: ms-example-usage
