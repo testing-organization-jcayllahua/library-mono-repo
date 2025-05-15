@@ -66,6 +66,7 @@ jobs:
           retention-days: 1
 
       - name: Create Security Patch Issue
+        if: ${{ failure() }}
         env:
           DEPS: ${{ needs.call_workflow.outputs.dependencies }}
           BRANCH_NAME: ${{ needs.call_workflow.outputs.branch_created }}
