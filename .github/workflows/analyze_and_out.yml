@@ -167,15 +167,68 @@ jobs:
         run: export $(grep -v '^#' ms-example-usage/.env | xargs) && ./gradlew :ms-example-usage:build
 
       - name: All tests passed
-        if: success()
+        if: ${{ success() }}
         run: echo "✅ All tests passed!"
 
       - name: Build failed
-        if: failure()
+        if: ${{ failure() }}
         run: echo "❌ Build or tests failed"
+
+      - name: Create Issue
+        env:
+            DEPS: ${{ steps.patch_vulnerabilities.outputs.dependencies }}
+            BRANCH_NAME: ${{ steps.patch_vulnerabilities.outputs.branch_created }}
+            GH_TOKEN: ${{ secrets.token }}
+        if: ${{ failure() }}
+        run: |
+          IFS=',' read -ra deps_array <<< "$DEPS" 
+          formatted_changes=""
+          
+          for dep in "${deps_array[@]}"; do
+            GROUP=$(echo "$dep" | cut -d':' -f1)
+            ARTIFACT=$(echo "$dep" | cut -d':' -f2)
+            VERSION=$(echo "$dep" | cut -d':' -f3)
+            formatted_changes+="- ⬆️ Actualización de \`${GROUP}:${ARTIFACT}\` a \`${VERSION}\`
+          "
+          done
+          
+          # Create the body content with proper newlines
+          body=$(cat <<EOF
+          ## 🛡️ Resumen
+          
+          Este issue documenta la resolución de vulnerabilidades de seguridad identificadas en escaneos recientes de dependencias. Sin embargo, **el build del proyecto falló después de aplicar las correciones.**
+
+          Por favor, investiga los errores y determina si las fallas están relacionadas con la compatibilidad de los cambios introducidos.
+          
+          ## 🔧 Cambios Realizados
+          
+          ${formatted_changes}
+          
+          ## 📚 Referencias
+          
+          - 📌 Alertas de Dependabot  
+          - 🕵️‍♂️ Base de Datos de CVEs (if applicable)
+          
+          ## ✅ Próximos pasos
+          
+          - [ ] 🔍 Verificar la compatibilidad de las dependencias actualizadas
+          - [ ] 📦 Revisar los logs del proceso de compilación
+          - [ ] 🔁 Coordinar con el equipo de seguridad para la revisión final
+          
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/testing-organization-jcayllahua/library-mono-repo/issues \
+            -F "title=🔐 Correcciones de Seguridad: Falló la construcción del proyecto cliente" \
+            -F "body=${body}" \
+            -F "labels[]=security-patch" \
+            -F "type=Security"
+          
 
       - name: Create Patch Branch, Commit & Push
         id: branch_creation
+        if: ${{ success() }}
         run: |
           BRANCH_NAME="fix/security-patch-$(TZ=America/Lima date +%F)"
           echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
