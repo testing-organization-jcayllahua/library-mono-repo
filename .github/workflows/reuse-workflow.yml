@@ -1,4 +1,4 @@
-name: Reusing Worfklow
+name: Analyze Patch Vulnerabilities
 on:
   workflow_dispatch:
 jobs:
