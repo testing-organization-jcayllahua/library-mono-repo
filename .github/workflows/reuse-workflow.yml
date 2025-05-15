@@ -51,14 +51,15 @@ jobs:
           docker run --network host -p 8080:8080 --name my-app my-app &
           
       - name: Run Grafana k6 tests
+        id: k6-test
         uses: grafana/run-k6-action@v1.2.0
-        continue-on-error: true
         with:
           debug: true
           path: |
             ./ms-example-usage/k6-tests-2*.js 
 
       - name: Archive K6 Test Reports
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: k6-results
@@ -123,6 +124,7 @@ jobs:
             -F "type=Security"
             
       - name: Deploy
+        if: ${{ always() }}
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
