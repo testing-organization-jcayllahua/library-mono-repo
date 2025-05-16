@@ -1,6 +1,6 @@
 version: 2
 updates:
   - package-ecosystem: "gradle"
-    directory: "/" # Update this if your Gradle files are in a subdirectory
+    directory: "/library-example" # Update this if your Gradle files are in a subdirectory
     schedule:
       interval: "daily" # You can set this to daily, weekly, or monthly
