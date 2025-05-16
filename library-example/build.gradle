@@ -3,11 +3,11 @@ buildscript {
             mavenCentral()
         }
         dependencies {
-            classpath "org.apache.commons:commons-compress:1.26.0"
+            classpath "org.apache.commons:commons-compress:1.27.1"
         }
         configurations.classpath {
             resolutionStrategy {
-                force "org.apache.commons:commons-compress:1.26.0"
+                force "org.apache.commons:commons-compress:1.27.1"
             }
         }
 }
