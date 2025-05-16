@@ -1,5 +1,5 @@
 buildscript {
-  configurations.all {
+  configurations.configureEach {
     resolutionStrategy {
         force "org.apache.commons:commons-compress:1.26.0"
     }
@@ -41,10 +41,18 @@ dependencies {
     api 'commons-io:commons-io:2.18.0'
     api 'ch.qos.logback:logback-core:1.1.11'
 
+
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+tasks.register("resolveBuildscriptClasspath") {
+    doLast {
+        buildscript.configurations.forEach {
+            it.resolve()
+        }
+    }
 }
 
 bootJar {
