@@ -1,15 +1,9 @@
 buildscript {
-        repositories {
-            mavenCentral()
-        }
-        dependencies {
-            classpath "org.apache.commons:commons-compress:1.26.0"
-        }
-        configurations.classpath {
-            resolutionStrategy {
-                force "org.apache.commons:commons-compress:1.26.0"
-            }
-        }
+  configurations.all {
+    resolutionStrategy {
+        force "org.apache.commons:commons-compress:1.26.0"
+    }
+  }
 }
 plugins {
     id 'java'
