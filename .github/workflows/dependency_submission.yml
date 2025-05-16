@@ -23,3 +23,4 @@ jobs:
       with:
         build-root-directory: library-example
         gradle-version: "8.12.1"
+        dependency-resolution-task: resolveBuildscriptClasspath
